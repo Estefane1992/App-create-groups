@@ -5,9 +5,10 @@ import { GroupCard } from "@components/GroupCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { useState } from "react";
 import { FlatList } from "react-native";
+import { Button } from "@components/Button";
 
 export default function Groups(){
-    const [groups, setGroups] = useState<string[]>([]);
+    const [groups, setGroups] = useState([]);
     return(
         <Container>
             <Header />
@@ -29,6 +30,9 @@ export default function Groups(){
                         message="Você ainda não possui turmas. Cadastre uma nova turma!"
                     />
                 )}
+            />
+            <Button 
+                title='Criar nova turma'
             />
         </Container>
         
