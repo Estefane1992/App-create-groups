@@ -30,6 +30,7 @@ export default function Groups(){
                         message="Você ainda não possui turmas. Cadastre uma nova turma!"
                     />
                 )}
+                showsVerticalScrollIndicator={false}
             />
             <Button 
                 title='Criar nova turma'

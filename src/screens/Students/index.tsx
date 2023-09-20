@@ -5,8 +5,10 @@ import { Highlight } from "@components/Highlight";
 import { ButtonIcon } from "@components/ButtonIcon";
 import { Input } from "@components/Input";
 import { Filter } from "@components/Filter";
+import { StydentsCard } from '@components/StudentsCard'
+import { ListEmpty } from "@components/ListEmpty";
+import { Button } from "@components/Button";
 import { useState } from "react";
-
 
 export function Students() {
     const [turma, setTurma] = useState('Turma A');
@@ -44,6 +46,27 @@ export function Students() {
                     {students.length} 
                 </NumberOfStudents>
             </HeaderList>
+            <FlatList
+                data={students}
+                keyExtractor={item => item}
+                renderItem={({ item }) => (
+                    <StydentsCard
+                        name={item}
+                        onRemove={() => {}}
+                    />
+                )} 
+                ListEmptyComponent={() => (
+                    <ListEmpty 
+                        message="Não há alunos cadastrados"
+                    />
+                )}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[{ paddingBottom: 100 },students.length === 0 && { flex: 1 }]}
+            />
+            <Button
+                title="Remover turma"
+                type="SECONDARY"
+            />
         </Container>
     )
 }
