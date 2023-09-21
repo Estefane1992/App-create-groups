@@ -1,14 +1,32 @@
+import { useState, useEffect } from "react";
 import { Header } from "@components/Header";
 import { Container} from "./styles";
 import { Highlight } from "@components/Highlight";
 import { GroupCard } from "@components/GroupCard";
 import { ListEmpty } from "@components/ListEmpty";
-import { useState } from "react";
 import { FlatList } from "react-native";
 import { Button } from "@components/Button";
+import { useNavigation } from "@react-navigation/native";
+import { groupsGetAll } from "@storage/group/groupsGetAll";
 
-export default function Groups(){
+export default function Groups() {
+    
     const [groups, setGroups] = useState([]);
+    const navigation = useNavigation();
+
+    function handleNewGroup() {
+        navigation.navigate('new');
+    }
+    
+    async function fetchGroups() { 
+        try {
+            const data = await groupsGetAll();
+            setGroups(data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return(
         <Container>
             <Header />
@@ -34,6 +52,7 @@ export default function Groups(){
             />
             <Button 
                 title='Criar nova turma'
+                onPress={handleNewGroup}
             />
         </Container>
         

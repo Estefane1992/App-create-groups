@@ -1,4 +1,5 @@
-import  Groups  from '@screens/Groups';
+import { Routes } from './src/routes';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemeProvider } from 'styled-components/native';
 import theme from './src/theme';
 import { useFonts, Roboto_400Regular, Roboto_700Bold } from '@expo-google-fonts/roboto';
@@ -15,7 +16,7 @@ export default function App() {
         backgroundColor='transparent'
         translucent
       />
-      {fontsLoaded ? <Groups /> : <Loading/>}
+      {fontsLoaded ? <Routes /> : <Loading/>}
     </ThemeProvider>
   );
 }
