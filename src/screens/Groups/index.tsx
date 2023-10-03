@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Header } from "@components/Header";
 import { Container} from "./styles";
 import { Highlight } from "@components/Highlight";
@@ -6,7 +6,7 @@ import { GroupCard } from "@components/GroupCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { FlatList } from "react-native";
 import { Button } from "@components/Button";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { groupsGetAll } from "@storage/group/groupsGetAll";
 
 export default function Groups() {
@@ -27,6 +27,14 @@ export default function Groups() {
         }
     }
 
+    function handdleOpenGroup(group: string) { 
+        navigation.navigate('students', { group });
+    }
+
+    useFocusEffect(useCallback(() => {
+        fetchGroups();
+    }, []))
+
     return(
         <Container>
             <Header />
@@ -40,6 +48,7 @@ export default function Groups() {
                 renderItem={({item}) => (
                     <GroupCard 
                         title={item}
+                        onPress={() => handdleOpenGroup(item)}
                     />
                 )}
                 contentContainerStyle={groups.length === 0 && {flex: 1}}
