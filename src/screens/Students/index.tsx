@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRoute } from "@react-navigation/native";
-import { Alert, FlatList } from "react-native";
+import { Alert, FlatList, TextInput } from "react-native";
 import { Header } from "@components/Header";
 import { Container, Form, HeaderList, NumberOfStudents } from "./styles";
 import { Highlight } from "@components/Highlight";
@@ -10,9 +10,13 @@ import { Filter } from "@components/Filter";
 import { StydentsCard } from "@components/StudentsCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
-import { studentAddByGroup } from "@storage/student/studentAddByGroups";
-import { studentsGetByGroup } from "@storage/student/studentsGetByGroup";
 import { AppError } from "@utils/AppErros";
+
+import { studentAddByGroup } from "@storage/student/studentAddByGroups";
+import { studentsGetByGroupAndTurma } from "@storage/student/studentsGetByGroupAndTurma";
+import { StudentStorageDTO } from "@storage/student/StudentStoregeDTO";
+import { studentRemoveByGroup } from "@storage/student/studentRemoveByGroup";
+
 
 type RouteParams = {
     group: string;
@@ -23,10 +27,12 @@ export function Students() {
 
     const [turma, setTurma] = useState("Turma A");
 
-    const [students, setStudents] = useState([]);
+    const [students, setStudents] = useState<StudentStorageDTO[]>([]);
 
     const route = useRoute();
     const { group } = route.params as RouteParams;
+
+    const newStudentNameInputRef = useRef<TextInput>(null);
 
     async function handleAddStudent() { 
         if (newStudentName.trim().length === 0) {
@@ -40,8 +46,11 @@ export function Students() {
 
         try {
             await studentAddByGroup(newStudent, group);
-            const students = await studentsGetByGroup(group);
-            console.log(students);
+
+            newStudentNameInputRef.current?.blur();
+            setNewStudentName('');
+            fetchSudentsByTurma();
+
         } catch (error) {
             if(error instanceof AppError) {
                 Alert.alert('Nova pessoa', error.message);
@@ -52,6 +61,31 @@ export function Students() {
         }
     }
 
+    async function fetchSudentsByTurma() {
+        try {
+            const studentsByTurma = await studentsGetByGroupAndTurma(group, turma);
+            setStudents(studentsByTurma);
+        } catch (error) {
+            console.log(error)
+            Alert.alert('Alunos', 'Não foi possível carregar os alunos do time selecionado.')
+        }
+    }
+
+    async function handleStudentsRemove(studentsName: string) { 
+        try {
+            await studentRemoveByGroup(studentsName, group);
+            fetchSudentsByTurma();
+        } catch (error) {
+            console.log(error);
+            Alert.alert('Alunos', 'Não foi possível remover o aluno.')
+            
+        }
+    }
+    
+    useEffect(() => {
+        fetchSudentsByTurma();
+    }, [turma]);
+
     return (
         <Container>
             <Header showBackButton />
@@ -61,8 +95,13 @@ export function Students() {
             />
             <Form>
                 <Input
-                onChangeText={setNewStudentName}
-                    placeholder="Nome do participante" autoCorrect={false}
+                    inputRef={newStudentNameInputRef}
+                    onChangeText={setNewStudentName}
+                    value={newStudentName}
+                    placeholder="Nome do participante"
+                    autoCorrect={false}
+                    onSubmitEditing={handleAddStudent}
+                    returnKeyType="done"
                 />
 
                 <ButtonIcon
@@ -85,13 +124,19 @@ export function Students() {
                     )}
                     horizontal
                 />
-                <NumberOfStudents>{students.length}</NumberOfStudents>
+                <NumberOfStudents>
+                    {students.length}
+                </NumberOfStudents>
             </HeaderList>
+
             <FlatList
                 data={students}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.name}
                 renderItem={({ item }) => (
-                    <StydentsCard name={item} onRemove={() => { }} />
+                    <StydentsCard
+                        name={item.name}
+                        onRemove={() => handleStudentsRemove(item.name)}
+                    />
                 )}
                 ListEmptyComponent={() => (
                     <ListEmpty message="Não há alunos cadastrados" />
