@@ -17,6 +17,7 @@ import { studentsGetByGroupAndTurma } from "@storage/student/studentsGetByGroupA
 import { StudentStorageDTO } from "@storage/student/StudentStoregeDTO";
 import { studentRemoveByGroup } from "@storage/student/studentRemoveByGroup";
 import { groupRemoveByName } from "@storage/group/groupRemoveByName";
+import { Loading } from "@components/Loading";
 
 
 type RouteParams = {
@@ -24,12 +25,10 @@ type RouteParams = {
 };
 
 export function Students() {
+    const [isLoading, setIsLoading] = useState(true);
     const [newStudentName, setNewStudentName] = useState("");
-
     const [turma, setTurma] = useState("Turma A");
-
     const [students, setStudents] = useState<StudentStorageDTO[]>([]);
-
     const navigation = useNavigation();
     const route = useRoute();
     const { group } = route.params as RouteParams;
@@ -65,11 +64,17 @@ export function Students() {
 
     async function fetchSudentsByTurma() {
         try {
+            setIsLoading(true);
+
             const studentsByTurma = await studentsGetByGroupAndTurma(group, turma);
+
             setStudents(studentsByTurma);
+           
         } catch (error) {
             console.log(error)
             Alert.alert('Alunos', 'Não foi possível carregar os alunos do time selecionado.')
+        } finally {
+             setIsLoading(false);
         }
     }
 
@@ -152,24 +157,27 @@ export function Students() {
                 </NumberOfStudents>
             </HeaderList>
 
-            <FlatList
-                data={students}
-                keyExtractor={(item) => item.name}
-                renderItem={({ item }) => (
-                    <StydentsCard
-                        name={item.name}
-                        onRemove={() => handleStudentsRemove(item.name)}
-                    />
-                )}
-                ListEmptyComponent={() => (
-                    <ListEmpty message="Não há alunos cadastrados" />
-                )}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={[
-                    { paddingBottom: 100 },
-                    students.length === 0 && { flex: 1 },
-                ]}
-            />
+            {
+                isLoading ? <Loading /> :
+                <FlatList
+                    data={students}
+                    keyExtractor={(item) => item.name}
+                    renderItem={({ item }) => (
+                        <StydentsCard
+                            name={item.name}
+                            onRemove={() => handleStudentsRemove(item.name)}
+                        />
+                    )}
+                    ListEmptyComponent={() => (
+                        <ListEmpty message="Não há alunos cadastrados" />
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={[
+                        { paddingBottom: 100 },
+                        students.length === 0 && { flex: 1 },
+                    ]}
+                />
+            }
             <Button
                 title="Remover turma"
                 type="SECONDARY"
